@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
-# This script configures Nginx for port 80, stops conflicting Apache, and adjusts firewall.
-
-# Remove default Nginx config if it exists
-if [[ -e /etc/nginx/sites-enabled/default ]]; then
-    rm /etc/nginx/sites-enabled/default
-fi
+# Configures an Nginx server to listen on port 80.
 
 # Create symbolic link to enable Nginx on port 80 for all IPv4
-if [[ ! -e /etc/nginx/sites-enabled/default ]]; then
-    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Start Nginx service if it's not running
+if ! systemctl is-active --quiet nginx; then
+    service nginx start
 fi
 
-# Restart nginx only if it's not running
-if ! systemctl is-active --quiet nginx; then
-    systemctl restart nginx
+# Kill the first Nginx process if it's running
+nginx_pid=$(pgrep nginx | head -n 1)
+if [[ -n $nginx_pid ]]; then
+    kill "$nginx_pid"
 fi
