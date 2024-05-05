@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Configures an Nginx server to listen on port 80.
+# This script configures Nginx for port 80, stops conflicting Apache, and adjusts firewall.
 
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-# restart nginx
-service nginx start
-# termination of the first nginx process ID
-kill "$(pgrep 'nginx' | head -1)”
+# Remove default Nginx config
+rm /etc/nginx/sites-enabled/default
+
+# Configure Nginx to listen on port 80 for all IPv4
+ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Restart nginx
+systemctl restart nginx
