@@ -1,34 +1,9 @@
 #!/usr/bin/env bash
 # This script checks and configures Nginx settings for port 80, stopping conflicting Apache services, and adjusts firewall settings if needed.
 
-# Check if 'listen 80 default_server;' is present and correctly configured in the default Nginx site configuration
-if ! grep -q "listen 80 default_server;" /etc/nginx/sites-enabled/default; then
-    echo "Error: 'listen 80 default_server;' is missing or misconfigured in /etc/nginx/sites-enabled/default"
-    # Update the configuration to bind port 80 to all IPv4 addresses
-    echo "Updating the Nginx configuration to bind port 80 to all IPv4 addresses..."
-    sudo sed -i '/^ *listen [[:digit:]]* default_server;/c\    listen 80 default_server;' /etc/nginx/sites-enabled/default
-fi
-
-# Check if another web server like Apache is using port 80
-if sudo ss -tnlp 'sport = :80' | grep -q apache2; then
-    echo "Error: Another web server like Apache is active and using port 80"
-    # Stop the Apache service
-    echo "Stopping Apache service..."
-    sudo systemctl stop apache2
-fi
-
-# Check if Nginx is running
-if ! pgrep -x nginx >/dev/null; then
-    echo "Error: Nginx is not running"
-    # Restart Nginx
-    echo "Starting Nginx..."
-    sudo systemctl start nginx
-fi
-
-# Check if UFW firewall is blocking port 80
-if sudo ufw status | grep -q "80/tcp"; then
-    echo "Error: UFW firewall configuration is restricting Nginx from binding to port 80"
-    # Allow incoming traffic on port 80
-    echo "Allowing incoming traffic on port 80..."
-    sudo ufw allow 80/tcp
-fi
+# remove the default Nginx configuration file
+rm /etc/nginx/sites-enabled/default
+# Configure Nginx to listen on port 80 for all active IPv4 IPs
+ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+# restart nginx
+service nginx restart
