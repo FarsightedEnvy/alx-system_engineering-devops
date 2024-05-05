@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # Configures an Nginx server to listen on port 80.
 
-# Creates symbolic link (-s option) between the Nginx configuration file and the enabled sites directory
+# Create symbolic link to enable Nginx on port 80 for all IPv4
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-# Restart nginx
-service nginx start
-# Terminate the first nginx process ID
-kill "$(pgrep 'nginx' | head -1)”
+
+# Start Nginx service if it's not running
+if ! systemctl is-active --quiet nginx; then
+    service nginx start
+fi
+
+# Kill the first Nginx process if it's running
+nginx_pid=$(pgrep nginx | head -n 1)
+if [[ -n $nginx_pid ]]; then
+    kill "$nginx_pid"
+fi
